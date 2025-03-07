@@ -1,21 +1,7 @@
-FROM docker:20.10
+FROM docker/compose:1.29.2
 
-# Install dependencies with correct package names
-RUN apk add --no-cache \
-    bash \
-    git \
-    curl \
-    python3 \
-    py3-pip \
-    libffi-dev \
-    openssl-dev \
-    gcc \
-    libc-dev \
-    make
-
-# Install docker-compose using Python 3
-RUN pip3 install --upgrade pip && \
-    pip3 install docker-compose
+# Install additional tools
+RUN apk add --no-cache bash git curl postgresql-client
 
 # Clone the official Taiga docker repository
 RUN git clone https://github.com/taigaio/taiga-docker.git /taiga
