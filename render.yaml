@@ -1,23 +1,31 @@
 services:
   # Taiga Main Service
-  - type: worker
+  - type: web
     name: taiga
     env: docker
     dockerfilePath: ./Dockerfile
     plan: standard
     envVars:
-      - key: RENDER_EXTERNAL_HOSTNAME
+      - key: TAIGA_SITES_DOMAIN
         fromService:
           name: taiga
-          type: worker
+          type: web
           property: host
+      - key: TAIGA_SITES_SCHEME
+        value: https
+      - key: TAIGA_SECRET_KEY
+        generateValue: true
       - key: POSTGRES_HOST
         fromService:
           name: taiga-postgres
           type: pserv
           property: host
+      - key: POSTGRES_USER
+        value: taiga
       - key: POSTGRES_PASSWORD
         sync: false
+      - key: POSTGRES_DB
+        value: taiga
     
   # Postgres Database
   - type: pserv
