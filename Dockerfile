@@ -1,8 +1,21 @@
 FROM docker:20.10
 
-# Install docker-compose and other tools
-RUN apk add --no-cache py-pip bash git curl
-RUN pip install docker-compose
+# Install dependencies with correct package names
+RUN apk add --no-cache \
+    bash \
+    git \
+    curl \
+    python3 \
+    py3-pip \
+    libffi-dev \
+    openssl-dev \
+    gcc \
+    libc-dev \
+    make
+
+# Install docker-compose using Python 3
+RUN pip3 install --upgrade pip && \
+    pip3 install docker-compose
 
 # Clone the official Taiga docker repository
 RUN git clone https://github.com/taigaio/taiga-docker.git /taiga
