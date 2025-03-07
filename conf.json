@@ -1,0 +1,12 @@
+{
+    "api": "https://TAIGA_SITES_DOMAIN/api/v1/",
+    "eventsUrl": "wss://TAIGA_SITES_DOMAIN/events",
+    "debug": false,
+    "publicRegisterEnabled": true,
+    "feedbackEnabled": true,
+    "privacyPolicyUrl": null,
+    "termsOfServiceUrl": null,
+    "GDPRUrl": null,
+    "maxUploadFileSize": 104857600,
+    "contribPlugins": []
+}
