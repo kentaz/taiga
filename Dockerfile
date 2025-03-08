@@ -1,10 +1,7 @@
-# Update to a newer Python version
 FROM python:3.9-slim
-
-# Keep your existing setup
+# Avoid prompts during installation
 ENV DEBIAN_FRONTEND=noninteractive
-
-# Keep your existing apt packages
+# Install dependencies
 RUN apt-get update && apt-get install -y \
     nginx \
     postgresql-client \
@@ -21,18 +18,30 @@ RUN apt-get update && apt-get install -y \
     curl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-
 # Clone specific Taiga versions that are compatible
 WORKDIR /opt
 RUN git clone -b stable https://github.com/taigaio/taiga-back.git && \
     git clone -b stable https://github.com/taigaio/taiga-front-dist.git
-
-# Update this section - don't pin pip to an old version
+# Set up Python environment with updated pip
 WORKDIR /opt/taiga-back
 RUN pip install --upgrade pip && \
     pip install wheel setuptools && \
     pip install psycopg2-binary gunicorn && \
     pip install -r requirements.txt
-
-# Rest of your Dockerfile remains the same
-...
+# Set up Nginx configuration
+COPY nginx.conf /etc/nginx/sites-available/taiga
+RUN mkdir -p /etc/nginx/sites-enabled && \
+    ln -s /etc/nginx/sites-available/taiga /etc/nginx/sites-enabled/taiga && \
+    rm -f /etc/nginx/sites-enabled/default
+# Create supervisord configuration
+COPY supervisord.conf /etc/supervisor/conf.d/taiga.conf
+# Copy config files
+COPY local.py /opt/taiga-back/settings/local.py
+COPY conf.json /opt/taiga-front-dist/dist/conf.json
+# Create required directories
+RUN mkdir -p /opt/taiga-back/media /opt/taiga-back/static
+# Entry script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+EXPOSE 80
+ENTRYPOINT ["/entrypoint.sh"]
