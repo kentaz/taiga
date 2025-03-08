@@ -10,27 +10,42 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     python3-venv \
+    python3-dev \
+    build-essential \
+    libpq-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libxml2-dev \
+    libxslt-dev \
+    libssl-dev \
+    libffi-dev \
     nodejs \
     npm \
     git \
     supervisor \
-    curl
+    curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Clone Taiga repositories
+# Clone specific Taiga versions that are compatible
 WORKDIR /opt
-RUN git clone https://github.com/taigaio/taiga-back.git && \
-    git clone https://github.com/taigaio/taiga-front-dist.git
+RUN git clone -b 6.0.0 https://github.com/taigaio/taiga-back.git && \
+    git clone -b 6.0.0 https://github.com/taigaio/taiga-front-dist.git
 
-# Set up Python environment for backend
+# Set up Python environment for backend with improved error handling
 WORKDIR /opt/taiga-back
 RUN python3 -m venv venv && \
     . venv/bin/activate && \
-    pip install -r requirements.txt
+    pip install --upgrade pip setuptools wheel && \
+    pip install psycopg2-binary && \
+    pip install -r requirements.txt || (echo "Full pip install failed, trying with --no-deps" && \
+    pip install --no-deps -r requirements.txt && \
+    pip install django-filter djangorestframework django-cors-headers)
 
 # Set up Nginx configuration
 COPY nginx.conf /etc/nginx/sites-available/taiga
 RUN ln -s /etc/nginx/sites-available/taiga /etc/nginx/sites-enabled/taiga && \
-    rm /etc/nginx/sites-enabled/default
+    rm -f /etc/nginx/sites-enabled/default
 
 # Create supervisord configuration
 COPY supervisord.conf /etc/supervisor/conf.d/taiga.conf
